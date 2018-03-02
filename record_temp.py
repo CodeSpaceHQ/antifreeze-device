@@ -57,7 +57,7 @@ class TemperaturePoster:
         :return: None
         '''
 
-        data = json.dumps({'temp': temp, 'device_id': self.device_id})
+        data = json.dumps({'temp': temp, 'deviceId': self.device_id, 'time': str(time.time())})
         response = requests.post(self.web_address, data)
         print(temp)  # This print statement won't be necessary once the post are working correctly.
 
