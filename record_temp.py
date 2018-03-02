@@ -1,8 +1,6 @@
 import time
-# import RPi.GPIO
-# import Adafruit_DHT
-
-import random
+import RPi.GPIO
+import Adafruit_DHT
 
 from multiprocessing import Process
 
@@ -40,8 +38,7 @@ class TemperaturePoster:
         '''
 
         # Get the temperature and humidity from the temperature sensor.
-        # humidity, temp = Adafruit_DHT.read_retry(Adafruit_DHT.DHT11, 2)
-        temp = random.randint(0, 101)
+        humidity, temp = Adafruit_DHT.read_retry(Adafruit_DHT.DHT11, 2)
         return temp
 
     def send_temp(self, temp):
