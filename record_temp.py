@@ -34,7 +34,7 @@ class TemperaturePoster:
 
         self.update_interval = update_interval
 
-        self.device_id = "10ab1023"
+        self.device_id = "10ab1023"  # This value will be taken from a file in later versions.
 
         self.poster = Process(target=self._post_temp)
 
