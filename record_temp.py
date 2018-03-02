@@ -61,7 +61,7 @@ class TemperaturePoster:
         response = requests.post(self.web_address, data)
         print(temp)  # This print statement won't be necessary once the post are working correctly.
 
-    def _post_temp(self):
+    def __post_temp(self):
         '''
         _post_temp continually gets the temperature and then sends it to
         the server.
