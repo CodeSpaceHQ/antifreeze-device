@@ -1,23 +1,28 @@
 import time
 import RPi.GPIO
 import Adafruit_DHT
+import requests
+import json
 
 from multiprocessing import Process
 
 
 class TemperaturePoster:
 
-    def __init__(self, update_interval=1):
+    def __init__(self, web_address, update_interval=1):
         '''
         __init__ creates a TemperaturePoster object.
 
+        :param self.web_address: <str> the web address to send the temperature data to.
         :param update_interval: <int> an integer grater than zero that is the number
             of seconds to wait before posting another temperature.
             Default Value: 1
 
         Class Variables:
+        self.web_address: <str> the web address to send the temperature data to.
         self.update_interval: <int> an integer greater than zero that is the number
             of seconds to wait before posting another temperature.
+        self.device_id: <str> a string that uniquely identifies this device to the server.
         self.poster: <Process> the process that continually gets and posts temperatures.
         '''
 
@@ -25,9 +30,12 @@ class TemperaturePoster:
         if update_interval < 1:
             update_interval = 1
 
+        self.web_address = web_address
+
         self.update_interval = update_interval
 
-        # self.poster: <Process> the process that continually gets and posts temperatures.
+        self.device_id = "10ab1023"
+
         self.poster = Process(target=self._post_temp)
 
     def get_temp(self):
@@ -49,7 +57,9 @@ class TemperaturePoster:
         :return: None
         '''
 
-        print(temp)
+        data = json.dumps({'temp': temp, 'device_id': self.device_id})
+        response = requests.post(self.web_address, data)
+        print(temp)  # This print statement won't be necessary once the post are working correctly.
 
     def _post_temp(self):
         '''
@@ -99,7 +109,7 @@ class TemperaturePoster:
         self.stop_posting_temp()
 
 
-tp = TemperaturePoster()
+tp = TemperaturePoster("http://www.tester.com")
 tp.start_posting_temp()
 time.sleep(5)
 tp.stop_posting_temp()
