@@ -20,8 +20,7 @@ password = os.getenv("EMAIL_PASSWORD")
 email_to_send_to = os.getenv("SEND_TO")
 
 # Get the ip address of the raspberry pi.
-ip_config = subprocess.check_output(["ifconfig", "wlan0"])
-ip_config.decode("utf-8")
+ip_config = subprocess.getoutput(["ifconfig", "wlan0"])
 
 # Get the current date and time.
 current_time = datetime.datetime.now()
