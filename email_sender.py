@@ -5,6 +5,7 @@ import datetime
 import os
 import smtplib
 import socket
+import subprocess
 
 from dotenv import load_dotenv
 from email.mime.multipart import MIMEMultipart
@@ -19,7 +20,7 @@ password = os.getenv("EMAIL_PASSWORD")
 email_to_send_to = os.getenv("SEND_TO")
 
 # Get the ip address of the raspberry pi.
-ip_address = socket.gethostbyname(socket.gethostname())
+ip_address = subprocess.call(["ifconfig", "wlan0", "|", "sed", "-n", "'2s/[^:]*:\\([^ ]*\\).*/\\1/p'"])
 
 # Get the current date and time.
 current_time = datetime.datetime.now()
