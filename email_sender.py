@@ -20,16 +20,16 @@ password = os.getenv("EMAIL_PASSWORD")
 email_to_send_to = os.getenv("SEND_TO")
 
 # Get the ip address of the raspberry pi.
-ip_address = subprocess.call(["ifconfig", "wlan0", "|", "sed", "-n", "'2s/[^:]*:\([^ ]*\).*/\1/p'"])
+ip_config = subprocess.call(["ifconfig", "wlan0"])
 
 # Get the current date and time.
 current_time = datetime.datetime.now()
 
 subject = "Raspberry Pi Start Report"
 message = "Raspberry Pi Start Report\n" \
-          "IP Address :: %s\n" \
+          "IP Config :: \n%s\n" \
           "Date :: %s\n" \
-          "Time :: %s\n" % (ip_address, str(current_time).split(sep=" ")[0], str(current_time).split(sep=" ")[1])
+          "Time :: %s\n" % (ip_config, str(current_time).split(sep=" ")[0], str(current_time).split(sep=" ")[1])
 
 # Connect to the gmail server and login.
 s = smtplib.SMTP(host='smtp.gmail.com', port=587)
