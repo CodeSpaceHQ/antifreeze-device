@@ -1,10 +1,8 @@
 # This program sends an email with the ip address and current time.
 # It is used to send an email every time the raspberry pi starts up.
 
-import datetime
 import os
 import smtplib
-import socket
 import subprocess
 
 from dotenv import load_dotenv
@@ -22,14 +20,9 @@ email_to_send_to = os.getenv("SEND_TO")
 # Get the ip address of the raspberry pi.
 ip_config = subprocess.getoutput(["ifconfig", "wlan0"])
 
-# Get the current date and time.
-current_time = datetime.datetime.now()
-
 subject = "Raspberry Pi Start Report"
 message = "Raspberry Pi Start Report\n" \
-          "IP Config :: \n%s\n" \
-          "Date :: %s\n" \
-          "Time :: %s\n" % (ip_config, str(current_time).split(sep=" ")[0], str(current_time).split(sep=" ")[1])
+          "IP Config :: \n%s\n" % ip_config
 
 # Connect to the gmail server and login.
 s = smtplib.SMTP(host='smtp.gmail.com', port=587)
