@@ -109,7 +109,7 @@ class TemperaturePoster:
         self.stop_posting_temp()
 
 
-tp = TemperaturePoster("http://www.tester.com")
+tp = TemperaturePoster("http://35.226.42.111:8081/device/")
 tp.start_posting_temp()
 time.sleep(5)
 tp.stop_posting_temp()
