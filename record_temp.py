@@ -17,17 +17,19 @@ class TemperaturePoster:
     server.
     '''
 
-    def __init__(self, web_address, update_interval=1):
+    def __init__(self, web_address, web_token, update_interval=1):
         '''
         __init__ creates a TemperaturePoster object.
 
         :param self.web_address: <str> the web address to send the temperature data to.
+        :param web_token: <str> the web token to post data to the server.
         :param update_interval: <int> an integer grater than zero that is the number
             of seconds to wait before posting another temperature.
             Default Value: 1
 
         Class Variables:
         self.web_address: <str> the web address to send the temperature data to.
+        self.web_token: <str> the web token to post data to the server.
         self.update_interval: <int> an integer greater than zero that is the number
             of seconds to wait before posting another temperature.
         self.device_id: <str> a string that uniquely identifies this device to the server.
@@ -39,6 +41,8 @@ class TemperaturePoster:
             update_interval = 1
 
         self.web_address = web_address
+
+        self.web_token = web_token
 
         self.update_interval = update_interval
 
