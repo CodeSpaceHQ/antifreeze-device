@@ -1,8 +1,12 @@
-import time
-import RPi.GPIO
 import Adafruit_DHT
-import requests
+import atexit
 import json
+import os
+import pickle
+import requests
+import RPi.GPIO
+import time
+
 
 from multiprocessing import Process
 
@@ -34,9 +38,9 @@ class TemperaturePoster:
 
         self.update_interval = update_interval
 
-        self.device_id = "10ab1023"  # This value will be taken from a file in later versions.
+        self.poster = Process(target=self.__post_temp)
 
-        self.poster = Process(target=self._post_temp)
+        atexit.register(self.__exit)
 
     def get_temp(self):
         '''
@@ -57,7 +61,7 @@ class TemperaturePoster:
         :return: None
         '''
 
-        data = json.dumps({'temp': temp, 'deviceId': self.device_id, 'time': str(time.time())})
+        data = json.dumps({'temp': temp, 'time': str(time.time())})
         response = requests.post(self.web_address, data)
         print(temp)  # This print statement won't be necessary once the post are working correctly.
 
@@ -99,9 +103,9 @@ class TemperaturePoster:
             self.poster.terminate()
             self.poster.join()
 
-    def __del__(self):
+    def __exit(self):
         '''
-        __del__ makes sure the self.poster process is terminated.
+        __exit makes sure the self.poster process is terminated.
 
         :return: None
         '''
@@ -109,7 +113,55 @@ class TemperaturePoster:
         self.stop_posting_temp()
 
 
-tp = TemperaturePoster("http://35.226.42.111:8081/device/")
-tp.start_posting_temp()
-time.sleep(5)
-tp.stop_posting_temp()
+class Device:
+
+    def __init__(self, web_address):
+
+        self.web_address = web_address
+
+        self.save_file_path = "./token.pkl"
+
+        self.web_token = self.register_device(self.save_file_path)
+
+        self.temp_poster = TemperaturePoster(web_address)
+
+    def register_device(self, save_file_path):
+
+        if os.path.isfile(save_file_path):
+            with open(save_file_path, "rb") as file:
+                saved_data = pickle.load(file)
+
+            web_token = saved_data["web_token"]
+
+        else:
+            registered = False
+            while not registered:
+                user_name = input("User Name :: ")
+                password = input("Password :: ")
+                device_name = input("Desired Device Name :: ")
+
+                try:
+                    registered = True
+                    data = json.dumps({"userName": user_name, "password": password, "deviceName": device_name})
+                    response = requests.post(self.web_address, data)
+
+                except:
+                    print("Error Registering Device")
+                    registered = False
+
+            web_token = response["web_token"]
+
+            with open(save_file_path, "wb+") as file:
+                pickle.dumps({"web_token": web_token})
+
+        return web_token
+
+    def run(self):
+        self.temp_poster.start_posting_temp()
+        time.sleep(5)
+        self.temp_poster.stop_posting_temp()
+
+
+if __name__ == "__main__":
+    device = Device("http://35.226.42.111:8081/device/")
+    device.run()
