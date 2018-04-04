@@ -12,6 +12,10 @@ from multiprocessing import Process
 
 
 class TemperaturePoster:
+    '''
+    TemperaturePoster post retrieves temperature data from the temperature sensor and posts it to the
+    server.
+    '''
 
     def __init__(self, web_address, update_interval=1):
         '''
@@ -114,6 +118,9 @@ class TemperaturePoster:
 
 
 class Device:
+    '''
+    Device runs the RaspberryPi device.
+    '''
 
     def __init__(self, web_address):
 
@@ -126,37 +133,64 @@ class Device:
         self.temp_poster = TemperaturePoster(web_address)
 
     def register_device(self, save_file_path):
+        '''
+        register_device loads the web token given to this device when it registered if the
+        save file at save_file_path exists, otherwise it registers the device and creates the
+        file at save_file_path.
+        :param save_file_path: <str> the path to the save file if it exists or the path to where the
+            save file will be created after the device is registered.
+        :return: <str> the web token that was given to this device at registration
+        '''
 
+        # If the saved file exists:
         if os.path.isfile(save_file_path):
+            # Get the data out of the file.
             with open(save_file_path, "rb") as file:
                 saved_data = pickle.load(file)
 
+            # Get the web token out of the data from the file.
             web_token = saved_data["web_token"]
 
         else:
+            # Set the device to not registered.
             registered = False
+
+            # While the device is not registered:
             while not registered:
+
+                # Get information from the user.
                 user_name = input("User Name :: ")
                 password = input("Password :: ")
                 device_name = input("Desired Device Name :: ")
 
                 try:
+                    # Assume that everything will work out and the device will successfully register.
                     registered = True
+
+                    # Send the registration request to the server.
                     data = json.dumps({"userName": user_name, "password": password, "deviceName": device_name})
-                    response = requests.post(self.web_address, data)
+                    response = requests.post(self.web_address + "/register_device", data)
 
                 except:
+                    # Print an error message and correct the assumption that the device will successfully register.
                     print("Error Registering Device")
                     registered = False
 
+            # Get the web token from the registration request.
             web_token = response["web_token"]
 
+            # Save the web token into the file.
             with open(save_file_path, "wb+") as file:
                 pickle.dumps({"web_token": web_token})
 
         return web_token
 
     def run(self):
+        '''
+        run runs the device.
+        :return: None
+        '''
+
         self.temp_poster.start_posting_temp()
         time.sleep(5)
         self.temp_poster.stop_posting_temp()
