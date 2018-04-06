@@ -106,7 +106,7 @@ class TemperaturePoster:
         if not self.poster.is_alive():
             self.poster.start()
 
-        logging.info("Temperature Poster posting started.")
+            logging.info("Temperature Poster posting started.")
 
     def stop_posting_temp(self):
         '''
@@ -121,7 +121,7 @@ class TemperaturePoster:
             self.poster.terminate()
             self.poster.join()
 
-        logging.info("Temperature Poster posting stopped.")
+            logging.info("Temperature Poster posting stopped.")
 
     def __exit(self):
         '''
