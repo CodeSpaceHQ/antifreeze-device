@@ -271,7 +271,7 @@ class Device:
 
 
 if __name__ == "__main__":
-    logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p',
+    logging.basicConfig(format='%(asctime)s - %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p',
                         filename='Debug.log', level=logging.DEBUG)
     device = Device("http://35.226.42.111:8081")
     device.run()
