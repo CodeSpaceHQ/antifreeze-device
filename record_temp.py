@@ -265,8 +265,6 @@ class Device:
         # If the TemperaturePoster self.temp_poster was created successfully:
         if self.temp_poster is not None:
             self.temp_poster.start_posting_temp()
-            time.sleep(5)
-            self.temp_poster.stop_posting_temp()
 
 
 if __name__ == "__main__":
