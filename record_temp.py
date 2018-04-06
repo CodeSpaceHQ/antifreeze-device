@@ -59,12 +59,12 @@ class TemperaturePoster:
         '''
         get_temp gets the temperature reading from the sensor.
 
-        :return: <float> temperature in Celsius
+        :return: <int> temperature in Celsius
         '''
 
         # Get the temperature and humidity from the temperature sensor.
         humidity, temp = Adafruit_DHT.read_retry(Adafruit_DHT.DHT11, 2)
-        return temp
+        return int(temp)
 
     def send_temp(self, temp):
         '''
