@@ -72,7 +72,7 @@ class TemperaturePoster:
 
         header = {"Authorization": "Bearer " + self.web_token}
         data = {"date": int(time.time()), "temp": temp}
-        response = requests.post(self.web_address + "/temp", headers=header, json=data)
+        response = requests.post(self.web_address + "/rest/device/temp", headers=header, json=data)
 
     def __post_temp(self):
         '''
@@ -128,10 +128,24 @@ class Device:
     '''
 
     def __init__(self, web_address, token_save_file_path="./token.pkl"):
+        '''
+        __init__ creates a Device object.
+
+        :param web_address: <str> the main web address that request will be made to
+        :param token_save_file_path: <str> the path to where the token would be saved if the device was
+            previously registered
+            Default Value: "./token.pkl"
+
+        Class Variables:
+        self.web_address: <str> the main web address that request will be made to
+        self.web_token: <str|None> the web token that was given on successful registration or
+            None if registration was not successful
+        self.temp_poster: <TemperaturePoster|None> a TemperaturePoster object that will be used to
+            post temperatures to the server or None if the web token was not successfully gained
+            (self.web_token is None)
+        '''
 
         self.web_address = web_address
-
-        self.token_save_file_path = token_save_file_path
 
         self.web_token = self.get_web_token(token_save_file_path)
 
@@ -142,12 +156,22 @@ class Device:
             self.temp_poster = TemperaturePoster(web_address, self.web_token)
 
     def register_device(self):
+        '''
+        register_device registers the device with the server.
+        :return: <str|None> the web token returned upon successful registration
+            or None if registration was not successful
+        '''
+
+        # Set the web token to None as successful registration has not yet been achieved.
         web_token = None
 
-        # Set the number of registration attempts. to zero.
+        # Set the maximum number of attempts.
+        max_num_attempts = 3
+
+        # Set the number of registration attempts already tried.
         num_attempts = 0
 
-        # While the device is not registered:
+        # While the device is not registered and the maximum number of attempts is not exceeded:
         while web_token is None and num_attempts < 3:
 
             # Get information from the user.
@@ -157,7 +181,7 @@ class Device:
 
             # Send the registration request to the server.
             data = {"email": email, "password": password, "name": device_name}
-            response = requests.post(self.web_address + "/create", json=data)
+            response = requests.post(self.web_address + "/rest/device/create", json=data)
 
             # If the request was successful:
             if response.status_code == 200:
@@ -178,7 +202,8 @@ class Device:
 
             num_attempts += 1
 
-        if web_token is  None:
+        # If registration was not successful:
+        if web_token is None:
             print("The maximum number of registration attempts has been exceeded.")
 
         return web_token
@@ -229,5 +254,5 @@ class Device:
 
 
 if __name__ == "__main__":
-    device = Device("http://35.226.42.111:8081/rest/device")
+    device = Device("http://35.226.42.111:8081")
     device.run()
