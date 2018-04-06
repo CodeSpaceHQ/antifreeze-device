@@ -1,10 +1,10 @@
-import Adafruit_DHT
+# import Adafruit_DHT
 import atexit
 import json
 import os
 import pickle
 import requests
-import RPi.GPIO
+# import RPi.GPIO
 import time
 
 
@@ -58,7 +58,8 @@ class TemperaturePoster:
         '''
 
         # Get the temperature and humidity from the temperature sensor.
-        humidity, temp = Adafruit_DHT.read_retry(Adafruit_DHT.DHT11, 2)
+        #humidity, temp = Adafruit_DHT.read_retry(Adafruit_DHT.DHT11, 2)
+        temp = 22
         return temp
 
     def send_temp(self, temp):
@@ -126,30 +127,30 @@ class Device:
     Device runs the RaspberryPi device.
     '''
 
-    def __init__(self, web_address):
+    def __init__(self, web_address, token_save_file_path="./token.pkl"):
 
         self.web_address = web_address
 
-        self.save_file_path = "./token.pkl"
+        self.token_save_file_path = token_save_file_path
 
-        self.web_token = self.register_device(self.save_file_path)
+        self.web_token = self.register_device(token_save_file_path)
 
-        self.temp_poster = TemperaturePoster(web_address)
+        self.temp_poster = TemperaturePoster(web_address, self.web_token)
 
-    def register_device(self, save_file_path):
+    def register_device(self, token_save_file_path):
         '''
         register_device loads the web token given to this device when it registered if the
         save file at save_file_path exists, otherwise it registers the device and creates the
         file at save_file_path.
-        :param save_file_path: <str> the path to the save file if it exists or the path to where the
+        :param token_save_file_path: <str> the path to the save file if it exists or the path to where the
             save file will be created after the device is registered.
         :return: <str> the web token that was given to this device at registration
         '''
 
         # If the saved file exists:
-        if os.path.isfile(save_file_path):
+        if os.path.isfile(token_save_file_path):
             # Get the data out of the file.
-            with open(save_file_path, "rb") as file:
+            with open(token_save_file_path, "rb") as file:
                 saved_data = pickle.load(file)
 
             # Get the web token out of the data from the file.
@@ -159,33 +160,51 @@ class Device:
             # Set the device to not registered.
             registered = False
 
+            # Set the number of registration attempts. to zero.
+            num_attempts = 0
+
             # While the device is not registered:
-            while not registered:
+            while not registered and num_attempts < 3:
 
                 # Get information from the user.
-                user_name = input("User Name :: ")
+                email = input("User Email :: ")
                 password = input("Password :: ")
                 device_name = input("Desired Device Name :: ")
 
-                try:
-                    # Assume that everything will work out and the device will successfully register.
+                # Assume that everything will work out and the device will successfully register.
+                registered = True
+
+                # Send the registration request to the server.
+                data = {"email": email, "password": password, "name": device_name}
+                response = requests.post(self.web_address + "/create", json=data)
+
+                # If the request was successful:
+                if response.status_code == 200:
                     registered = True
 
-                    # Send the registration request to the server.
-                    data = json.dumps({"userName": user_name, "password": password, "deviceName": device_name})
-                    response = requests.post(self.web_address + "/register_device", data)
+                # Else if the request failed with status code 400:
+                elif response.status_code == 400:
+                    response_data = json.loads(response.text)
+                    print("ERROR :: " + response_data["message"])
 
-                except:
-                    # Print an error message and correct the assumption that the device will successfully register.
-                    print("Error Registering Device")
-                    registered = False
+                num_attempts += 1
 
-            # Get the web token from the registration request.
-            web_token = response["web_token"]
+            # If the request was successful and didn't quit due to too many attempts:
+            if response.status_code == 200:
+                # Load the response data:
+                response_data = json.loads(response.text)
 
-            # Save the web token into the file.
-            with open(save_file_path, "wb+") as file:
-                pickle.dumps({"web_token": web_token})
+                # Get the web token from the registration request.
+                web_token = response_data["token"]
+
+                # Save the web token into the file.
+                with open(token_save_file_path, "wb+") as file:
+                    pickle.dump({"web_token": web_token}, file)
+
+            # The request was not successful on any of it's attempts:
+            else:
+                print("Too many registration attempts. Device Not Registered.")
+                web_token = None
 
         return web_token
 
@@ -201,5 +220,5 @@ class Device:
 
 
 if __name__ == "__main__":
-    device = Device("http://35.226.42.111:8081/device/")
-    device.run()
+    device = Device("http://35.226.42.111:8081/rest/device")
+    #device.run()
