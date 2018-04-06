@@ -70,9 +70,9 @@ class TemperaturePoster:
         :return: None
         '''
 
-        data = json.dumps({'temp': temp, 'time': str(time.time())})
-        response = requests.post(self.web_address, data)
-        print(temp)  # This print statement won't be necessary once the post are working correctly.
+        header = {"Authorization": "Bearer " + self.web_token}
+        data = {"date": int(time.time()), "temp": temp}
+        response = requests.post(self.web_address + "/temp", headers=header, json=data)
 
     def __post_temp(self):
         '''
@@ -133,21 +133,67 @@ class Device:
 
         self.token_save_file_path = token_save_file_path
 
-        self.web_token = self.register_device(token_save_file_path)
+        self.web_token = self.get_web_token(token_save_file_path)
 
-        self.temp_poster = TemperaturePoster(web_address, self.web_token)
+        self.temp_poster = None
 
-    def register_device(self, token_save_file_path):
+        # If the web token was obtained successfully, then create the TemperaturePoster.
+        if self.web_token is not None:
+            self.temp_poster = TemperaturePoster(web_address, self.web_token)
+
+    def register_device(self):
+        web_token = None
+
+        # Set the number of registration attempts. to zero.
+        num_attempts = 0
+
+        # While the device is not registered:
+        while web_token is None and num_attempts < 3:
+
+            # Get information from the user.
+            email = input("User Email :: ")
+            password = input("Password :: ")
+            device_name = input("Desired Device Name :: ")
+
+            # Send the registration request to the server.
+            data = {"email": email, "password": password, "name": device_name}
+            response = requests.post(self.web_address + "/create", json=data)
+
+            # If the request was successful:
+            if response.status_code == 200:
+                # Load the response data:
+                response_data = json.loads(response.text)
+
+                # Get the web token from the registration request.
+                web_token = response_data["token"]
+
+            # Else if the request failed with status code 400:
+            elif response.status_code == 400:
+                response_data = json.loads(response.text)
+                print("ERROR :: " + response_data["message"])
+
+            # Else the request failed with a status code other than 400.
+            else:
+                print("ERROR :: request failed with error code %d.", response.status_code)
+
+            num_attempts += 1
+
+        if web_token is  None:
+            print("The maximum number of registration attempts has been exceeded.")
+
+        return web_token
+
+    def get_web_token(self, token_save_file_path):
         '''
-        register_device loads the web token given to this device when it registered if the
-        save file at save_file_path exists, otherwise it registers the device and creates the
-        file at save_file_path.
+        get_web_token gets the web token from the file specified by token_save_file_path if the file exists,
+        otherwise it registers the device and saves the web token given.
         :param token_save_file_path: <str> the path to the save file if it exists or the path to where the
             save file will be created after the device is registered.
-        :return: <str> the web token that was given to this device at registration
+        :return: <str|None> the web token that was given to this device at registration or None if it
+            could not register the device successfully.
         '''
 
-        # If the saved file exists:
+        # If the saved file exists the device has already been registered:
         if os.path.isfile(token_save_file_path):
             # Get the data out of the file.
             with open(token_save_file_path, "rb") as file:
@@ -156,55 +202,16 @@ class Device:
             # Get the web token out of the data from the file.
             web_token = saved_data["web_token"]
 
+        # The device has not yet been registered:
         else:
-            # Set the device to not registered.
-            registered = False
+            # Attempt to register the device.
+            web_token = self.register_device()
 
-            # Set the number of registration attempts. to zero.
-            num_attempts = 0
-
-            # While the device is not registered:
-            while not registered and num_attempts < 3:
-
-                # Get information from the user.
-                email = input("User Email :: ")
-                password = input("Password :: ")
-                device_name = input("Desired Device Name :: ")
-
-                # Assume that everything will work out and the device will successfully register.
-                registered = True
-
-                # Send the registration request to the server.
-                data = {"email": email, "password": password, "name": device_name}
-                response = requests.post(self.web_address + "/create", json=data)
-
-                # If the request was successful:
-                if response.status_code == 200:
-                    registered = True
-
-                # Else if the request failed with status code 400:
-                elif response.status_code == 400:
-                    response_data = json.loads(response.text)
-                    print("ERROR :: " + response_data["message"])
-
-                num_attempts += 1
-
-            # If the request was successful and didn't quit due to too many attempts:
-            if response.status_code == 200:
-                # Load the response data:
-                response_data = json.loads(response.text)
-
-                # Get the web token from the registration request.
-                web_token = response_data["token"]
-
+            # If the device was registered successfully:
+            if web_token is not None:
                 # Save the web token into the file.
                 with open(token_save_file_path, "wb+") as file:
                     pickle.dump({"web_token": web_token}, file)
-
-            # The request was not successful on any of it's attempts:
-            else:
-                print("Too many registration attempts. Device Not Registered.")
-                web_token = None
 
         return web_token
 
@@ -214,11 +221,13 @@ class Device:
         :return: None
         '''
 
-        self.temp_poster.start_posting_temp()
-        time.sleep(5)
-        self.temp_poster.stop_posting_temp()
+        # If the TemperaturePoster self.temp_poster was created successfully:
+        if self.temp_poster is not None:
+            self.temp_poster.start_posting_temp()
+            time.sleep(5)
+            self.temp_poster.stop_posting_temp()
 
 
 if __name__ == "__main__":
     device = Device("http://35.226.42.111:8081/rest/device")
-    #device.run()
+    device.run()
