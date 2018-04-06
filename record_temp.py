@@ -18,7 +18,7 @@ class TemperaturePoster:
     server.
     '''
 
-    def __init__(self, web_address, web_token, update_interval=1):
+    def __init__(self, web_address, web_token, update_interval=5):
         '''
         __init__ creates a TemperaturePoster object.
 
@@ -26,7 +26,7 @@ class TemperaturePoster:
         :param web_token: <str> the web token to post data to the server.
         :param update_interval: <int> an integer grater than zero that is the number
             of seconds to wait before posting another temperature.
-            Default Value: 1
+            Default Value: 5
 
         Class Variables:
         self.web_address: <str> the web address to send the temperature data to.
@@ -187,7 +187,7 @@ class Device:
         num_attempts = 0
 
         # While the device is not registered and the maximum number of attempts is not exceeded:
-        while web_token is None and num_attempts < 3:
+        while web_token is None and num_attempts < max_num_attempts:
 
             # Get information from the user.
             email = input("User Email :: ")
