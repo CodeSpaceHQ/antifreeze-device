@@ -1,6 +1,7 @@
 # import Adafruit_DHT
 import atexit
 import json
+import logging
 import os
 import pickle
 import requests
@@ -50,6 +51,10 @@ class TemperaturePoster:
 
         atexit.register(self.__exit)
 
+        logging.info("Temperature Poster Created :: self.web_address: %s, self.web_token not None: %r, "
+                     "self.update_interval: %d", self.web_address, self.web_token is not None,
+                     self.update_interval)
+
     def get_temp(self):
         '''
         get_temp gets the temperature reading from the sensor.
@@ -59,7 +64,7 @@ class TemperaturePoster:
 
         # Get the temperature and humidity from the temperature sensor.
         #humidity, temp = Adafruit_DHT.read_retry(Adafruit_DHT.DHT11, 2)
-        temp = 22
+        temp = 22.0
         return temp
 
     def send_temp(self, temp):
@@ -70,13 +75,15 @@ class TemperaturePoster:
         :return: None
         '''
 
+        logging.info("Posting a temperature of %f degrees C.", temp)
+
         header = {"Authorization": "Bearer " + self.web_token}
         data = {"date": int(time.time()), "temp": temp}
         response = requests.post(self.web_address + "/rest/device/temp", headers=header, json=data)
 
     def __post_temp(self):
         '''
-        _post_temp continually gets the temperature and then sends it to
+        __post_temp continually gets the temperature and then sends it to
         the server.
 
         :return: None
@@ -99,6 +106,8 @@ class TemperaturePoster:
         if not self.poster.is_alive():
             self.poster.start()
 
+        logging.info("Temperature Poster posting started.")
+
     def stop_posting_temp(self):
         '''
         stop_posting_temp stops getting the temperature and posting it to
@@ -111,6 +120,8 @@ class TemperaturePoster:
         if self.poster.is_alive():
             self.poster.terminate()
             self.poster.join()
+
+        logging.info("Temperature Poster posting stopped.")
 
     def __exit(self):
         '''
@@ -155,12 +166,17 @@ class Device:
         if self.web_token is not None:
             self.temp_poster = TemperaturePoster(web_address, self.web_token)
 
+        logging.info("Device Created :: self.web_address: %s, self.web_token is not None: %r",
+                     self.web_address, self.web_token is not None)
+
     def register_device(self):
         '''
         register_device registers the device with the server.
         :return: <str|None> the web token returned upon successful registration
             or None if registration was not successful
         '''
+
+        logging.info("Registering Device")
 
         # Set the web token to None as successful registration has not yet been achieved.
         web_token = None
@@ -205,6 +221,7 @@ class Device:
         # If registration was not successful:
         if web_token is None:
             print("The maximum number of registration attempts has been exceeded.")
+            logging.error("On device registration, maximum number of registration attempts exceeded.")
 
         return web_token
 
@@ -254,5 +271,7 @@ class Device:
 
 
 if __name__ == "__main__":
+    logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p',
+                        filename='Debug.log', level=logging.DEBUG)
     device = Device("http://35.226.42.111:8081")
     device.run()
