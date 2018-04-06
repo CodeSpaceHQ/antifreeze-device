@@ -1,0 +1,15 @@
+[Unit]
+Description=Emails The IP Config Settings
+Requires=local-fs.target
+Requires=network-online.target
+
+[Service]
+Type=idle
+ExecStart=/usr/bin/python3 /home/pi/Desktop/antifreeze-device/email_sender.py
+WorkingDirectory=/home/pi/Desktop/antifreeze-device
+StandardOutput=inherit
+StandardError=inherit
+User=pi
+
+[Install]
+WantedBy=multi-user.target

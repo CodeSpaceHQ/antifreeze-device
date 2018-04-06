@@ -1,0 +1,15 @@
+[Unit]
+Description=Starts The Temperature Recording Python Program
+Requires=local-fs.target
+Requires=network-online.target
+
+[Service]
+Type=idle
+ExecStart=/usr/bin/python3 /home/pi/Desktop/antifreeze-device/record_temp.py
+WorkingDirectory=/home/pi/Desktop/antifreeze-device
+StandardOutput=inherit
+StandardError=inherit
+User=pi
+
+[Install]
+WantedBy=multi-user.target
