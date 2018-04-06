@@ -1,11 +1,11 @@
-# import Adafruit_DHT
+import Adafruit_DHT
 import atexit
 import json
 import logging
 import os
 import pickle
 import requests
-# import RPi.GPIO
+import RPi.GPIO
 import time
 
 
@@ -63,8 +63,7 @@ class TemperaturePoster:
         '''
 
         # Get the temperature and humidity from the temperature sensor.
-        #humidity, temp = Adafruit_DHT.read_retry(Adafruit_DHT.DHT11, 2)
-        temp = 22.0
+        humidity, temp = Adafruit_DHT.read_retry(Adafruit_DHT.DHT11, 2)
         return temp
 
     def send_temp(self, temp):
