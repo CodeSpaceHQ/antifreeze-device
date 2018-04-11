@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>This is the Title</title>
+</head>
+
+<body>
+    <h1 style="text-align:center">Freeze-B-Gone Device Setup</h1>
+    <form style="text-align:center">
+        <label for="username">User Name</label>
+        <input type="text" id="username" placeholder="Your User Name ...">
+
+        <br/>
+
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="Your Password ...">
+
+        <br/>
+
+        <label for="devicename">Device Name</label>
+        <input type="text" id="devicename" placeholder="What You Want To Call Your Device ...">
+
+        <br/>
+
+        <label for="wifinetwork">Wifi Network</label>
+        <select id="wifinetwork"></select>
+
+        <br/>
+
+        <label for="wifipassword">Wifi Password</label>
+        <input type="password" id="wifipassword" placeholder="Your Password ...">
+    </form>
+
+    <button type="submit" onclick="submit()" style="display: flex; justify-content: center;">Submit</button>
+</body>
+
+<script>
+    var xhttp = new XMLHttpRequest();
+
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            var wifiDropDown = document.getElementById("wifinetwork");
+
+            wifiNetworks = this.responseText;
+            wifiNetworks = JSON.parse(wifiNetworks);
+
+            for(var i = 0; i < wifiNetworks.length; i++){
+                var option = document.createElement("option");
+                option.text = wifiNetworks[i];
+                wifiDropDown.add(option);
+            }
+        }
+    };
+
+    xhttp.open("GET", "wifi", true);
+    xhttp.send();
+
+    function submit(){
+        var xhttp = new XMLHttpRequest();
+
+        xhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                console.log("GOOD");
+            }
+
+            console.log("BAD");
+        };
+
+        xhttp.open("POST", "submit", true);
+        xhttp.send();
+    }
+</script>
+
+</html>
