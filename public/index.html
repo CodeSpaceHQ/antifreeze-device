@@ -7,33 +7,56 @@
 </head>
 
 <body>
-    <h1 style="text-align:center">Freeze-B-Gone Device Setup</h1>
-    <form style="text-align:center">
-        <label for="username">User Name</label>
-        <input type="text" id="username" placeholder="Your User Name ...">
+    <h1>Freeze-B-Gone Device Setup</h1>
+
+    <form>
+        <fieldset>
+            <legend>Freeze-B-Gone Login</legend>
+
+            <label for="username">User Name</label>
+            <input type="text" id="username" placeholder="Your User Name ...">
+
+            <br />
+
+            <label for="password">Password</label>
+            <input type="password" id="password" placeholder="Your Password ...">
+        </fieldset>
+
+        <br />
+
+        <fieldset>
+            <legend>WiFi Login</legend>
+
+            <label for="wifinetwork">Wifi Network</label>
+            <select id="wifinetwork"></select>
+
+            <br />
+
+            <label for="wifipassword">Wifi Password</label>
+            <input type="password" id="wifipassword" placeholder="Your Password ...">
+        </fieldset>
 
         <br/>
 
-        <label for="password">Password</label>
-        <input type="password" id="password" placeholder="Your Password ...">
+        <fieldset>
+            <legend>Device Registration</legend>
 
-        <br/>
+            <label for="devicename">Device Name</label>
+            <input type="text" id="devicename" placeholder="What You Want To Call Your Device ...">
 
-        <label for="devicename">Device Name</label>
-        <input type="text" id="devicename" placeholder="What You Want To Call Your Device ...">
+            <br />
 
-        <br/>
+            <label for="webip">Website IP Address</label>
+            <input type="text" id="webip" placeholder="Your Website IP Address ...">
+        </fieldset>
 
-        <label for="wifinetwork">Wifi Network</label>
-        <select id="wifinetwork"></select>
+        <br />
 
-        <br/>
+        <button type="submit" onclick="submit()" style="display: flex; justify-content: center;">Setup Device</button>
 
-        <label for="wifipassword">Wifi Password</label>
-        <input type="password" id="wifipassword" placeholder="Your Password ...">
     </form>
 
-    <button type="submit" onclick="submit()" style="display: flex; justify-content: center;">Submit</button>
+
 </body>
 
 <script>
@@ -59,6 +82,16 @@
 
     function submit(){
         var xhttp = new XMLHttpRequest();
+
+        var payload = {
+            username: document.getElementById("username").textContent,
+            password: document.getElementById("password").textContent,
+            deviceName: document.getElementById("devicename").textContent,
+            wifiNetwork: document.getElementById("wifinetwork").options[document.getElementById("wifinetwork").selectedIndex].value,
+            wifiPassword: document.getElementById("wifipassword").textContent
+        }
+
+        console.log(payload);
 
         xhttp.onreadystatechange = function() {
             if (this.readyState == 4 && this.status == 200) {
