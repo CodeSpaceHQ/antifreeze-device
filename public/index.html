@@ -125,8 +125,11 @@
         // Turn the request into a POST request to the "/submit" end point.
         xhttp.open("POST", "submit", true);
 
+        // Put the message type of this request to json.
+        xhttp.setRequestHeader("Content-Type", "application/json");
+
         // Send the request.
-        xhttp.send(payload);
+        xhttp.send(JSON.stringify(payload));
     }
 </script>
 

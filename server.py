@@ -26,7 +26,12 @@ def getWifiNetworks():
 
 @app.route("/submit", methods=["POST"])
 def submit():
+
+    data = request.get_json()
+
+    print("str :: " + str(data))
     print("POSTED")
+
     return "DONE"
 
 class Server:
