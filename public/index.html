@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>This is the Title</title>
+    <title>Freeze-B-Gone Device Setup</title>
 </head>
 
 <body>
@@ -81,6 +81,8 @@
                 option.text = wifiNetworks[i];
                 wifiDropDown.add(option);
             }
+
+            console.log("Available WiFi Networks :: " + wifiNetworks);
         }
     };
 
@@ -111,16 +113,7 @@
             webIP: document.getElementById("webip").value
         }
 
-        console.log(payload);
-
-        xhttp.onreadystatechange = function() {
-            if (this.readyState == 4 && this.status == 200) {
-                console.log("Submit request received successfully.");
-            }
-            else{
-                console.log("Submit request received unsuccessfully.");
-            }
-        };
+        console.log("User Input To Be Sent :: " + JSON.stringify(payload));
 
         // Turn the request into a POST request to the "/submit" end point.
         xhttp.open("POST", "submit", true);

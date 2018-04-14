@@ -32,7 +32,7 @@ def submit():
     print("str :: " + str(data))
     print("POSTED")
 
-    return "DONE"
+    return send_from_directory("./public", "index.html")
 
 class Server:
 
@@ -40,7 +40,7 @@ class Server:
         self.app = app
 
     def start(self):
-        self.app.run()
+        self.app.run(host="0.0.0.0", port=5000)
 
 
 if __name__ == "__main__":
