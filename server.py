@@ -43,7 +43,7 @@ def submit():
 
     # Put the values passed by the user into the wpa_supplicant template.
     wifi_signin = template.substitute(wifi_ssid=data["wifiNetwork"],
-                                      wifi_password='"' + data["wifiPassword"] + '"')
+                                      wifi_password=data["wifiPassword"])
 
     with open("/etc/wpa_supplicant/wpa_supplicant.conf", "a") as file:
         file.write(wifi_signin)
