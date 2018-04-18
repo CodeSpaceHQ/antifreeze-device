@@ -13,12 +13,13 @@ def index():
 
 @app.route("/wifi")
 def getWifiNetworks():
-    # answer = sh.ls(".").stdout.decode("utf-8")
-    answer = sh.grep(sh.iwlist("wlan0", "scan"),  "-Po", "(?<=ESSID:).*")
+    answer = sh.grep(sh.iwlist("wlan0", "scan"),  "-Po", "(?<=ESSID:).*").stdout.decode("utf-8")
 
     answer = answer.strip()
 
     answer = re.split("\\s+", answer)
+
+    answer = list(set(answer))
 
     print(answer)
 
