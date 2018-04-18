@@ -38,7 +38,7 @@ def submit():
     template = None
 
     # Read in the wpa_supplicant.conf template file.
-    with open("./config_file/wpa_supplicant.conf", "r") as file:
+    with open("./config_files/wpa_supplicant.conf", "r") as file:
         template = Template(file.read())
 
     # Put the values passed by the user into the wpa_supplicant template.
