@@ -37,15 +37,15 @@ def submit():
 
     template = None
 
-    # Read in the wpa_supplicant.conf template file.
-    with open("./config_files/wpa_supplicant.conf", "r") as file:
+    # Read in the wpa_supplicant.conf_filled template file.
+    with open("./config_files/wpa_supplicant.conf_filled", "r") as file:
         template = Template(file.read())
 
     # Put the values passed by the user into the wpa_supplicant template.
     wifi_signin = template.substitute(wifi_ssid=data["wifiNetwork"],
                                       wifi_password=data["wifiPassword"])
 
-    with open("/etc/wpa_supplicant/wpa_supplicant.conf", "a") as file:
+    with open("/etc/wpa_supplicant/wpa_supplicant.conf", "w") as file:
         file.write(wifi_signin)
 
     sh.systemctl("stop", "dnsmasq").stdout
