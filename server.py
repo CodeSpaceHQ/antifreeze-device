@@ -48,6 +48,14 @@ def submit():
     with open("/etc/wpa_supplicant/wpa_supplicant.conf", "w") as file:
         file.write(wifi_signin)
 
+    with open("./config_files/dhcpcd.conf_blank", "r") as file:
+        dhcpcd_conf = file.read()
+
+    with open("/etc/dhcpcd.conf", "w") as file:
+        file.write(dhcpcd_conf)
+
+    sh.systemctl("restart", "dhcpcd").stdout
+
     sh.systemctl("stop", "dnsmasq").stdout
     sh.systemctl("stop", "hostapd").stdout
 
@@ -62,6 +70,30 @@ class Server:
         self.app = app
 
     def start(self):
+
+        with open("./config_files/dhcpcd.conf_filled", "r") as file:
+            dhcpcd_conf = file.read()
+
+        with open("/etc/dhcpcd.conf", "w") as file:
+            file.write(dhcpcd_conf)
+
+
+        with open("./config_files/dnsmasq.conf", "r") as file:
+            dhcpcd_conf = file.read()
+
+        with open("/etc/dnsmasq.conf", "w") as file:
+            file.write(dhcpcd_conf)
+
+
+        with open("./config_files/hostapd.conf", "r") as file:
+            dhcpcd_conf = file.read()
+
+        with open("/etc/hostapd/hostapd.conf", "w") as file:
+            file.write(dhcpcd_conf)
+
+        sh.systemctl("start", "dnsmasq").stdout
+        sh.systemctl("start", "hostapd").stdout
+
         self.app.run(host="0.0.0.0", port=5000)
 
 
