@@ -91,6 +91,8 @@ class Server:
         with open("/etc/hostapd/hostapd.conf", "w") as file:
             file.write(dhcpcd_conf)
 
+        sh.systemctl("restart", "dhcpcd").stdout
+
         sh.systemctl("start", "dnsmasq").stdout
         sh.systemctl("start", "hostapd").stdout
 
