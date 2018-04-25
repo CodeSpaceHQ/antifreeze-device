@@ -6,6 +6,8 @@ import re
 
 app = Flask(__name__)
 
+running = False
+
 
 @app.route("/")
 def index():
@@ -72,6 +74,9 @@ def stop():
         raise RuntimeError('Not running with the Werkzeug Server')
     func()
 
+    global running
+    running = False
+
 
 def start():
     with open("./config_files/dhcpcd.conf_filled", "r") as file:
@@ -98,6 +103,9 @@ def start():
 
     sh.systemctl("start", "dnsmasq").stdout
     sh.systemctl("start", "hostapd").stdout
+
+    global running
+    running= True
 
     app.run(host="0.0.0.0", port=5000)
 

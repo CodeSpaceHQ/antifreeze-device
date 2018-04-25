@@ -6,6 +6,7 @@ import os
 import pickle
 import requests
 import RPi.GPIO
+import server
 import time
 
 
@@ -161,6 +162,12 @@ class Device:
 
         self.temp_poster = None
 
+        if not self.internet_on():
+            server.start()
+
+        while server.running == True:
+            time.sleep(0.1)
+
         # If the web token was obtained successfully, then create the TemperaturePoster.
         if self.web_token is not None:
             self.temp_poster = TemperaturePoster(web_address, self.web_token)
@@ -256,6 +263,14 @@ class Device:
 
         return web_token
 
+    @staticmethod
+    def internet_on():
+        try:
+            response = requests.get("https://www.google.com")
+            return response.status_code == 200
+        except:
+            return False
+
     def run(self):
         '''
         run runs the device.
@@ -264,8 +279,7 @@ class Device:
 
         # If the TemperaturePoster self.temp_poster was created successfully:
         if self.temp_poster is not None:
-            self.temp_poster.start_posting_temp()
-
+           self.temp_poster.start_posting_temp()
 
 if __name__ == "__main__":
     logging.basicConfig(format='%(asctime)s - %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p',
