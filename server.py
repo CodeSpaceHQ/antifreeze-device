@@ -65,14 +65,15 @@ def submit():
 
     return send_from_directory("./public", "index.html")
 
+
 def stop():
     func = request.environ.get('werkzeug.server.shutdown')
     if func is None:
         raise RuntimeError('Not running with the Werkzeug Server')
     func()
 
-def start(self):
 
+def start():
     with open("./config_files/dhcpcd.conf_filled", "r") as file:
         dhcpcd_conf = file.read()
 
