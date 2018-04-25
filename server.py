@@ -61,44 +61,45 @@ def submit():
 
     sh.wpa_cli( "-i", "wlan0", "reconfigure").stdout
 
+    stop()
+
     return send_from_directory("./public", "index.html")
 
+def stop():
+    func = request.environ.get('werkzeug.server.shutdown')
+    if func is None:
+        raise RuntimeError('Not running with the Werkzeug Server')
+    func()
 
-class Server:
+def start(self):
 
-    def __init__(self, app):
-        self.app = app
+    with open("./config_files/dhcpcd.conf_filled", "r") as file:
+        dhcpcd_conf = file.read()
 
-    def start(self):
-
-        with open("./config_files/dhcpcd.conf_filled", "r") as file:
-            dhcpcd_conf = file.read()
-
-        with open("/etc/dhcpcd.conf", "w") as file:
-            file.write(dhcpcd_conf)
-
-
-        with open("./config_files/dnsmasq.conf", "r") as file:
-            dhcpcd_conf = file.read()
-
-        with open("/etc/dnsmasq.conf", "w") as file:
-            file.write(dhcpcd_conf)
+    with open("/etc/dhcpcd.conf", "w") as file:
+        file.write(dhcpcd_conf)
 
 
-        with open("./config_files/hostapd.conf", "r") as file:
-            dhcpcd_conf = file.read()
+    with open("./config_files/dnsmasq.conf", "r") as file:
+        dhcpcd_conf = file.read()
 
-        with open("/etc/hostapd/hostapd.conf", "w") as file:
-            file.write(dhcpcd_conf)
+    with open("/etc/dnsmasq.conf", "w") as file:
+        file.write(dhcpcd_conf)
 
-        sh.systemctl("restart", "dhcpcd").stdout
 
-        sh.systemctl("start", "dnsmasq").stdout
-        sh.systemctl("start", "hostapd").stdout
+    with open("./config_files/hostapd.conf", "r") as file:
+        dhcpcd_conf = file.read()
 
-        self.app.run(host="0.0.0.0", port=5000)
+    with open("/etc/hostapd/hostapd.conf", "w") as file:
+        file.write(dhcpcd_conf)
+
+    sh.systemctl("restart", "dhcpcd").stdout
+
+    sh.systemctl("start", "dnsmasq").stdout
+    sh.systemctl("start", "hostapd").stdout
+
+    app.run(host="0.0.0.0", port=5000)
 
 
 if __name__ == "__main__":
-    server = Server(app)
-    server.start()
+    start()
