@@ -8,6 +8,8 @@ app = Flask(__name__)
 
 running = False
 
+info = None
+
 
 @app.route("/")
 def index():
@@ -36,6 +38,12 @@ def submit():
 
     print("str :: " + str(data))
     print("POSTED")
+
+    global info
+    info = {"username": data["username"],
+            "password": data["password"],
+            "deviceName": data["deviceName"],
+            "webIP": data["webIP"]}
 
     template = None
 

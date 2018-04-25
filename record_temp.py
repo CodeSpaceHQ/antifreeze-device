@@ -156,17 +156,20 @@ class Device:
             (self.web_token is None)
         '''
 
-        self.web_address = web_address
-
-        self.web_token = self.get_web_token(token_save_file_path)
-
-        self.temp_poster = None
-
         if not self.internet_on():
             server.start()
 
         while server.running == True:
             time.sleep(0.1)
+
+        if server.info is not None:
+            self.web_address = "http://" + server.info["webIP"]
+        else:
+            self.web_address = web_address
+
+        self.web_token = self.get_web_token(token_save_file_path, server.info)
+
+        self.temp_poster = None
 
         # If the web token was obtained successfully, then create the TemperaturePoster.
         if self.web_token is not None:
@@ -175,7 +178,7 @@ class Device:
         logging.info("Device Created :: self.web_address: %s, self.web_token is not None: %r",
                      self.web_address, self.web_token is not None)
 
-    def register_device(self):
+    def register_device(self, userInfo=None):
         '''
         register_device registers the device with the server.
         :return: <str|None> the web token returned upon successful registration
@@ -193,45 +196,57 @@ class Device:
         # Set the number of registration attempts already tried.
         num_attempts = 0
 
-        # While the device is not registered and the maximum number of attempts is not exceeded:
-        while web_token is None and num_attempts < max_num_attempts:
+        if userInfo is None:
+            # While the device is not registered and the maximum number of attempts is not exceeded:
+            while web_token is None and num_attempts < max_num_attempts:
 
-            # Get information from the user.
-            email = input("User Email :: ")
-            password = input("Password :: ")
-            device_name = input("Desired Device Name :: ")
+                # Get information from the user.
+                email = input("User Email :: ")
+                password = input("Password :: ")
+                device_name = input("Desired Device Name :: ")
 
+                # Send the registration request to the server.
+                data = {"email": email, "password": password, "name": device_name}
+                response = requests.post(self.web_address + "/rest/device/create", json=data)
+
+                # If the request was successful:
+                if response.status_code == 200:
+                    # Load the response data:
+                    response_data = json.loads(response.text)
+
+                    # Get the web token from the registration request.
+                    web_token = response_data["token"]
+
+                # Else if the request failed with status code 400:
+                elif response.status_code == 400:
+                    response_data = json.loads(response.text)
+                    print("ERROR :: " + response_data["message"])
+
+                # Else the request failed with a status code other than 400.
+                else:
+                    print("ERROR :: request failed with error code %d.", response.status_code)
+
+                num_attempts += 1
+
+            # If registration was not successful:
+            if web_token is None:
+                print("The maximum number of registration attempts has been exceeded.")
+                logging.error("On device registration, maximum number of registration attempts exceeded.")
+
+        else:
             # Send the registration request to the server.
-            data = {"email": email, "password": password, "name": device_name}
+            data = {"email": userInfo["username"], "password": userInfo["password"], "name": userInfo["deviceName"]}
             response = requests.post(self.web_address + "/rest/device/create", json=data)
 
-            # If the request was successful:
-            if response.status_code == 200:
-                # Load the response data:
-                response_data = json.loads(response.text)
+            # Load the response data:
+            response_data = json.loads(response.text)
 
-                # Get the web token from the registration request.
-                web_token = response_data["token"]
-
-            # Else if the request failed with status code 400:
-            elif response.status_code == 400:
-                response_data = json.loads(response.text)
-                print("ERROR :: " + response_data["message"])
-
-            # Else the request failed with a status code other than 400.
-            else:
-                print("ERROR :: request failed with error code %d.", response.status_code)
-
-            num_attempts += 1
-
-        # If registration was not successful:
-        if web_token is None:
-            print("The maximum number of registration attempts has been exceeded.")
-            logging.error("On device registration, maximum number of registration attempts exceeded.")
+            # Get the web token from the registration request.
+            web_token = response_data["token"]
 
         return web_token
 
-    def get_web_token(self, token_save_file_path):
+    def get_web_token(self, token_save_file_path, userInfo=None):
         '''
         get_web_token gets the web token from the file specified by token_save_file_path if the file exists,
         otherwise it registers the device and saves the web token given.
@@ -253,7 +268,7 @@ class Device:
         # The device has not yet been registered:
         else:
             # Attempt to register the device.
-            web_token = self.register_device()
+            web_token = self.register_device(userInfo)
 
             # If the device was registered successfully:
             if web_token is not None:
@@ -279,7 +294,8 @@ class Device:
 
         # If the TemperaturePoster self.temp_poster was created successfully:
         if self.temp_poster is not None:
-           self.temp_poster.start_posting_temp()
+            self.temp_poster.start_posting_temp()
+
 
 if __name__ == "__main__":
     logging.basicConfig(format='%(asctime)s - %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p',
