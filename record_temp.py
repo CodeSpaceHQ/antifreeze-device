@@ -162,6 +162,9 @@ class Device:
         while server.running == True:
             time.sleep(0.1)
 
+        while self.internet_on() == False:
+            time.sleep(0.1)
+
         if server.info is not None:
             self.web_address = "http://" + server.info["webIP"]
         else:
@@ -173,7 +176,7 @@ class Device:
 
         # If the web token was obtained successfully, then create the TemperaturePoster.
         if self.web_token is not None:
-            self.temp_poster = TemperaturePoster(web_address, self.web_token)
+            self.temp_poster = TemperaturePoster(self.web_address, self.web_token)
 
         logging.info("Device Created :: self.web_address: %s, self.web_token is not None: %r",
                      self.web_address, self.web_token is not None)
