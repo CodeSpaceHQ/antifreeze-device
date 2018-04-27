@@ -9,7 +9,7 @@ ExecStart=/usr/bin/python3 /home/pi/Desktop/antifreeze-device/record_temp.py
 WorkingDirectory=/home/pi/Desktop/antifreeze-device
 StandardOutput=inherit
 StandardError=inherit
-User=pi
+User=root
 
 [Install]
 WantedBy=multi-user.target
