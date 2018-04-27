@@ -52,7 +52,7 @@ def submit():
     template = None
 
     # Read in the wpa_supplicant.conf_filled template file.
-    with open("./config_files/wpa_supplicant.conf_filled", "r") as file:
+    with open("/home/pi/Desktop/antifreeze-device/config_files/wpa_supplicant.conf_filled", "r") as file:
         template = Template(file.read())
 
     # Put the values passed by the user into the wpa_supplicant template.
@@ -65,7 +65,7 @@ def submit():
     logging.info("Set the /etc/wpa_supplicant/wpa_supplicant.conf file with name: %s, password: %s"
                  % (data["wifiNetwork"], data["wifiPassword"]))
 
-    with open("./config_files/dhcpcd.conf_blank", "r") as file:
+    with open("/home/pi/Desktop/antifreeze-device/config_files/dhcpcd.conf_blank", "r") as file:
         dhcpcd_conf = file.read()
 
     with open("/etc/dhcpcd.conf", "w") as file:
@@ -112,7 +112,7 @@ def start():
 
     logging.info("Began starting the server.")
 
-    with open("./config_files/dhcpcd.conf_filled", "r") as file:
+    with open("/home/pi/Desktop/antifreeze-device/config_files/dhcpcd.conf_filled", "r") as file:
         dhcpcd_conf = file.read()
 
     with open("/etc/dhcpcd.conf", "w") as file:
@@ -121,7 +121,7 @@ def start():
     logging.info("Replaced the /etc/dhcpcd.conf file.")
 
 
-    with open("./config_files/dnsmasq.conf", "r") as file:
+    with open("/home/pi/Desktop/antifreeze-device/config_files/dnsmasq.conf", "r") as file:
         dhcpcd_conf = file.read()
 
     with open("/etc/dnsmasq.conf", "w") as file:
@@ -130,7 +130,7 @@ def start():
     logging.info("Replaced the /etc/dnsmasq.conf file.")
 
 
-    with open("./config_files/hostapd.conf", "r") as file:
+    with open("/home/pi/Desktop/antifreeze-device/config_files/hostapd.conf", "r") as file:
         dhcpcd_conf = file.read()
 
     with open("/etc/hostapd/hostapd.conf", "w") as file:
