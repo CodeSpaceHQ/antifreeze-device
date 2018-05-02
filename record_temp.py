@@ -156,17 +156,23 @@ class Device:
             (self.web_token is None)
         '''
 
+        # If the device has not connected to internet, turn the device into a router and
+        # launch the web server for the user to put the wifi settings into.
         if not self.internet_on():
             server.start()
 
+        # Wait until the server is done running.
         while server.running == True:
             time.sleep(0.1)
 
+        # Wait until the internet is connected.
         while self.internet_on() == False:
             time.sleep(0.1)
 
+        # If the server was turned on and got the user's input:
         if server.info is not None:
             self.web_address = "http://" + server.info["webIP"]
+
         else:
             self.web_address = web_address
 
@@ -184,6 +190,8 @@ class Device:
     def register_device(self, userInfo=None):
         '''
         register_device registers the device with the server.
+        :param: <dict> userInfo is the userInfo object obtained from the server import
+            that contains the user's inputs from when the web server was up and running
         :return: <str|None> the web token returned upon successful registration
             or None if registration was not successful
         '''
@@ -199,6 +207,7 @@ class Device:
         # Set the number of registration attempts already tried.
         num_attempts = 0
 
+        # If the server was not run:
         if userInfo is None:
             # While the device is not registered and the maximum number of attempts is not exceeded:
             while web_token is None and num_attempts < max_num_attempts:
@@ -236,6 +245,7 @@ class Device:
                 print("The maximum number of registration attempts has been exceeded.")
                 logging.error("On device registration, maximum number of registration attempts exceeded.")
 
+        # If the server was run:
         else:
             # Send the registration request to the server.
             data = {"email": userInfo["username"], "password": userInfo["password"], "name": userInfo["deviceName"]}
@@ -283,9 +293,19 @@ class Device:
 
     @staticmethod
     def internet_on():
+        '''
+        internet_on determines whether the raspberry pi has connected to the internet.
+        :return: <boolean> true if the device is connected to the internet and false
+            otherwise
+        '''
+
+        # Try sending a get request to Google.
         try:
             response = requests.get("https://www.google.com")
             return response.status_code == 200
+
+        # If an error occurred during the request, the device must not be connected to
+        # the internet.
         except:
             return False
 
