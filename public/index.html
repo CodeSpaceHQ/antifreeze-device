@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Freeze-B-Gone Device Setup</title>
+</head>
+
+<body>
+    <h1>Freeze-B-Gone Device Setup</h1>
+
+    <form>
+        <fieldset>
+            <legend>Freeze-B-Gone Login</legend>
+
+            <label for="username">User Name</label>
+            <input type="text" id="username" placeholder="Your User Name ...">
+
+            <br />
+
+            <label for="password">Password</label>
+            <input type="password" id="password" placeholder="Your Password ...">
+        </fieldset>
+
+        <br />
+
+        <fieldset>
+            <legend>WiFi Login</legend>
+
+            <label for="wifinetwork">WiFi Network</label>
+            <select id="wifinetwork"></select>
+
+            <br />
+
+            <label for="wifipassword">WiFi Password</label>
+            <input type="password" id="wifipassword" placeholder="Your Password ...">
+        </fieldset>
+
+        <br/>
+
+        <fieldset>
+            <legend>Device Registration</legend>
+
+            <label for="devicename">Device Name</label>
+            <input type="text" id="devicename" placeholder="What You Want To Call Your Device ...">
+
+            <br />
+
+            <label for="webip">Website IP Address</label>
+            <input type="text" id="webip" placeholder="Your Website IP Address ...">
+        </fieldset>
+
+    </form>
+
+    <br />
+
+    <button type="button" onclick="submit()" style="display: flex; justify-content: center;">Setup Device</button>
+
+
+</body>
+
+<script>
+    // -- Get all the wifi options for the wifiNetwork drop-down. --
+
+    // Create a new request.
+    var xhttp = new XMLHttpRequest();
+
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+
+            // Get the text from the response and convert it into a list.
+            wifiNetworks = this.responseText;
+            wifiNetworks = JSON.parse(wifiNetworks);
+
+            // Get the wifi drop-down element.
+            var wifiDropDown = document.getElementById("wifinetwork");
+
+            // Add each of the wifi networks to the wifi drop-down.
+            for(var i = 0; i < wifiNetworks.length; i++){
+                var option = document.createElement("option");
+                option.text = wifiNetworks[i];
+                wifiDropDown.add(option);
+            }
+
+            console.log("Available WiFi Networks :: " + wifiNetworks);
+        }
+    };
+
+    // Turn the request into a GET request to the "/wifi" end point.
+    xhttp.open("GET", "wifi", true);
+
+    // Send the request.
+    xhttp.send();
+
+
+    // -- Create the code to execute when the submit button is pressed. --
+
+    function submit(){
+
+        // Create a new request.
+        var xhttp = new XMLHttpRequest();
+
+        // Get the index of the current option in the wifinetwork drop-down selected.
+        var wifiNetworkIndex = document.getElementById("wifinetwork").selectedIndex;
+
+        // Create an object to be sent to the server with all the values passed in by the user.
+        var payload = {
+            username: document.getElementById("username").value,
+            password: document.getElementById("password").value,
+            wifiNetwork: document.getElementById("wifinetwork").options[wifiNetworkIndex].value,
+            wifiPassword: document.getElementById("wifipassword").value,
+            deviceName: document.getElementById("devicename").value,
+            webIP: document.getElementById("webip").value
+        }
+
+        console.log("User Input To Be Sent :: " + JSON.stringify(payload));
+
+        // Turn the request into a POST request to the "/submit" end point.
+        xhttp.open("POST", "submit", true);
+
+        // Put the message type of this request to json.
+        xhttp.setRequestHeader("Content-Type", "application/json");
+
+        // Send the request.
+        xhttp.send(JSON.stringify(payload));
+    }
+</script>
+
+</html>
